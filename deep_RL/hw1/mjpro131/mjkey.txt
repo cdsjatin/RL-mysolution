@@ -1,0 +1,20 @@
+MuJoCo Pro Trial license activation key, number 110062, type 6.
+
+Issued to Jatin gupta <cdsjatin@gmail.com>.
+
+Expires April 14, 2018.
+
+This file activates MuJoCo Pro on a single computer with id:
+LINUX_521WDR05CLSY0_5DEBWCW1A0DV9A239W116
+
+Do not modify this file. Its entire content, including the
+plain text section, is used by the activation manager.
+
+813d8b64d2198e4c2c91cbc9b59e64f3c69276c35e0ff14614c9f179b99972ce
+01cf8b94cf3e066702eefb92d84f608a2ce4f622c16b5d224375967116ed793e
+c15d83493df643730b21c7720cd93fc86ddeae3af853c6eb70a7bd5586b4afea
+9f4a6b9ee9b8fcd69ab872e0086f25418475e1077fe5de1038880001627440a9
+5a227a1ded573781b9f6ff936b0517a5e843df8ed737aa589362930871b08100
+2e4c9b2c90dd8ca975f4286a2dc1bbac827bce7a9c61b27daeea6f327b1ee08b
+f9cf3131e2dc05268d4855fe1fe394567220b6c367edfa6ceb9a137dcce628c4
+65f076c6fde79ea5ee987b88b6e526fb1b3ed68dbc2f8bbab8b76245d2612aef
