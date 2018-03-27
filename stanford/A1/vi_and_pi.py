@@ -9,127 +9,157 @@ from lake_envs import *
 np.set_printoptions(precision=3)
 
 def policy_evaluation(P, nS, nA, policy, gamma=0.9, max_iteration=1000, tol=1e-3):
-	"""Evaluate the value function from a given policy.
+    """Evaluate the value function from a given policy.
 
-	Parameters
-	----------
-	P: dictionary
-		It is from gym.core.Environment
-		P[state][action] is tuples with (probability, nextstate, reward, terminal)
-	nS: int
-		number of states
-	nA: int
-		number of actions
-	gamma: float
-		Discount factor. Number in range [0, 1)
-	policy: np.array
-		The policy to evaluate. Maps states to actions.
-	max_iteration: int
-		The maximum number of iterations to run before stopping. Feel free to change it.
-	tol: float
-		Determines when value function has converged.
-	Returns
-	-------
-	value function: np.ndarray
-		The value function from the given policy.
-	
-	############################
-	# YOUR IMPLEMENTATION HERE #
-	############################
+    Parameters
+    ----------
+    P: dictionary
+        It is from gym.core.Environment
+        P[state][action] is tuples with (probability, nextstate, reward, terminal)
+    nS: int
+        number of states
+    nA: int
+        number of actions
+    gamma: float
+        Discount factor. Number in range [0, 1)
+    policy: np.array
+        The policy to evaluate. Maps states to actions.
+    max_iteration: int
+        The maximum number of iterations to run before stopping. Feel free to change it.
+    tol: float
+        Determines when value function has converged.
+    Returns
+    -------
+    value function: np.ndarray
+    The value function from the given policy.
     """
+    ############################
+    # YOUR IMPLEMENTATION HERE #
+    ############################
     
-    V = np.zeros(nS)
+#    V = np.abs(np.random.randn(nS,))
+    V = np.zeros(shape=(nS,), dtype = 'float')
     
-    for i in range(max_iteration):
-		for s in range(nS):
-			       
-            a = policy[s]
+    for j in range(max_iteration):
+        V_new = np.zeros(nS, dtype='float')
+        for s in range(nS):
             
-            #for a in actions:
-            prob, next_s, reward, terminal = P[s][a]
+            for prob, next_s, reward, terminal in P[s][policy[s]]:
             
-            # if s is not terminal state
-            if s != terminal:
-                kk = 0
-                for next_ in next_s:
-                    kk += prob[next_]*V[next_]
-                kk = gamma*kk
-            # Expectation doesn't enter because the policy is fixed.
-            V[s] = reward + kk
-                    
-                
+                V_new[s] += prob * (reward + gamma * V[next_s])
+    
+        if np.all(np.abs(V - V_new) < tol): 
+            break
         
-	return V
+        V = V_new
+            
+    return V
 
 
 def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
-	"""Given the value function from policy improve the policy.
+    """Given the value function from policy improve the policy.
 
-	Parameters
-	----------
-	P: dictionary
-		It is from gym.core.Environment
-		P[state][action] is tuples with (probability, nextstate, reward, terminal)
-	nS: int
-		number of states
-	nA: int
-		number of actions
-	gamma: float
-		Discount factor. Number in range [0, 1)
-	value_from_policy: np.ndarray
-		The value calculated from the policy
-	policy: np.array
-		The previous policy.
+    Parameters
+    ----------
+    P: dictionary
+    It is from gym.core.Environment
+    P[state][action] is tuples with (probability, nextstate, reward, terminal)
+    
+    nS: int
+    number of states
+    
+    nA: int
+    number of actions
+    
+    gamma: float
+    
+    Discount factor. Number in range [0, 1)
+    
+    value_from_policy: np.ndarray
+    The value calculated from the policy
+    
+    policy: np.array
+    The previous policy.
 
-	Returns
-	-------
-	new policy: np.ndarray
-		An array of integers. Each integer is the optimal action to take
-		in that state according to the environment dynamics and the
-		given value function.
-	"""
-	############################
-	# YOUR IMPLEMENTATION HERE #
-	############################
-	return np.zeros(nS, dtype='int')
+    Returns
+    -------
+    new policy: np.ndarray
+    An array of integers. Each integer is the optimal action to take
+    in that state according to the environment dynamics and the
+    given value function.
+    """
+    ############################
+    # YOUR IMPLEMENTATION HERE #
+    ############################
+    
+    V = value_from_policy
+    
+    policy = np.zeros(nS, dtype='int')
+    
+    for s in range(nS):
+        
+        Q = np.zeros(nA, dtype='float')
+        q = -np.inf
+        
+        for a in range(nA):
+            
+            for prob, next_s, reward, terminal in P[s][a]:
+                Q[a] += prob * (reward + gamma * V[next_s])
+                
+            if Q[a] > q:
+                q = Q[a]
+                policy[s] = a
+            #elif Q[a] == q:
+             #   if np.random.rand() < 0.5:
+              #      policy[s] = a
+                
+    return policy
 
 
 def policy_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
-	"""Runs policy iteration.
+    """Runs policy iteration.
 
-	You should use the policy_evaluation and policy_improvement methods to
-	implement this method.
+    You should use the policy_evaluation and policy_improvement methods to
+    implement this method.
 
-	Parameters
-	----------
-	P: dictionary
-		It is from gym.core.Environment
-		P[state][action] is tuples with (probability, nextstate, reward, terminal)
-	nS: int
-		number of states
-	nA: int
-		number of actions
-	gamma: float
-		Discount factor. Number in range [0, 1)
-	max_iteration: int
-		The maximum number of iterations to run before stopping. Feel free to change it.
-	tol: float
-		Determines when value function has converged.
-	Returns:
-	----------
-	value function: np.ndarray
-	policy: np.ndarray
-	"""
-	V = np.zeros(nS)
-	policy = np.zeros(nS, dtype=int)
-	############################
-	# YOUR IMPLEMENTATION HERE #
-	############################
-	return V, policy
+    Parameters
+    ----------
+    P: dictionary
+        It is from gym.core.Environment
+        P[state][action] is tuples with (probability, nextstate, reward, terminal)
+    nS: int
+        number of states
+    nA: int
+        number of actions
+    gamma: float
+        Discount factor. Number in range [0, 1)
+    max_iteration: int
+        The maximum number of iterations to run before stopping. Feel free to change it.
+    tol: float
+        Determines when value function has converged.
+    Returns:
+    ----------
+    value function: np.ndarray
+    policy: np.ndarray
+    """
+
+    policy = np.random.randint(0, nA, size=(nS), dtype='int')
+   # V_vi, policy = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+    #policy = {}
+    
+    #for s in range(nS):
+    #    policy[s] = range(nA)
+    
+    for i in range(max_iteration):
+        V = policy_evaluation(P, nS, nA, policy, gamma, max_iteration, tol)
+        policy = policy_improvement(P, nS, nA, V, policy, gamma=0.9)
+   
+
+    return V, policy
 
 def value_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
-	"""
-	Learn value function and policy by using value iteration method for a given
+    """
+    Learn value function and policy by using value iteration method for a given
 	gamma and environment.
 
 	Parameters:
@@ -152,12 +182,45 @@ def value_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
 	value function: np.ndarray
 	policy: np.ndarray
 	"""
-	V = np.zeros(nS)
-	policy = np.zeros(nS, dtype=int)
+	#V = np.zeros(nS)
+    
+    V = np.abs(np.random.randn(nS,))
+    V[15] = 0
+	
+    policy = np.zeros(nS, dtype=int)
 	############################
 	# YOUR IMPLEMENTATION HERE #
 	############################
-	return V, policy
+    #delta = 1
+    print(V)
+    count = 0
+    
+    for i in range(10000):
+        
+        for s in range(nS):
+            #v = V[s]
+            V_actions = []    
+            
+            for a in range(nA):
+    
+                v_next = 0
+                #for i in range(len(P[s][a])):
+                prob, next_s, reward, terminal = P[s][a][0]
+                    
+                v_next += prob*(reward + gamma * V[next_s])
+                
+                V_actions.append(v_next)                                        
+                
+            V[s] = np.max(V_actions)
+            
+        count += 1
+        #delta = max(0, abs(v - V[s]))
+        
+    print count
+    
+    policy = policy_improvement(P, nS, nA, V, policy, gamma)
+    
+    return V, policy
 
 def example(env):
 	"""Show an example of gym
@@ -194,7 +257,7 @@ def render_single(env, policy):
 
 	episode_reward = 0
 	ob = env.reset()
-	for t in range(100):
+	for t in range(8):
 		env.render()
 		time.sleep(0.5) # Seconds between frames. Modify as you wish.
 		a = policy[ob]
@@ -210,9 +273,10 @@ def render_single(env, policy):
 # Feel free to run your own debug code in main!
 # Play around with these hyperparameters.
 if __name__ == "__main__":
-	env = gym.make("Deterministic-4x4-FrozenLake-v0")
-	print env.__doc__
-	print "Here is an example of state, action, reward, and next state"
-	example(env)
-	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
-	V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+    env = gym.make("Deterministic-4x4-FrozenLake-v0")
+    #print env.__doc__
+    #print "Here is an example of state, action, reward, and next state"
+    #example(env)
+    V_vi, p_pi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+    V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+    render_single(env, p_pi)
