@@ -48,6 +48,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, max_iteration=1000, tol=1e-3
             
                 V_new[s] += prob * (reward + gamma * V[next_s])
     
+        ## IT HAS MAJOR SIGNIFICANCE IN ACTION DECIDING TOO
         if np.all(np.abs(V - V_new) < tol): 
             break
         
@@ -105,13 +106,14 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
             
             for prob, next_s, reward, terminal in P[s][a]:
                 Q[a] += prob * (reward + gamma * V[next_s])
-                
+             
+            # If the policies have same value then choose randomly    
             if Q[a] > q:
                 q = Q[a]
                 policy[s] = a
-            #elif Q[a] == q:
-             #   if np.random.rand() < 0.5:
-              #      policy[s] = a
+            elif Q[a] == q:
+                if np.random.rand() < 0.5:
+                    policy[s] = a
                 
     return policy
 
@@ -257,7 +259,7 @@ def render_single(env, policy):
 
 	episode_reward = 0
 	ob = env.reset()
-	for t in range(8):
+	for t in range(100):
 		env.render()
 		time.sleep(0.5) # Seconds between frames. Modify as you wish.
 		a = policy[ob]
@@ -273,10 +275,10 @@ def render_single(env, policy):
 # Feel free to run your own debug code in main!
 # Play around with these hyperparameters.
 if __name__ == "__main__":
-    env = gym.make("Deterministic-4x4-FrozenLake-v0")
+    env = gym.make("Stochastic-4x4-FrozenLake-v0")
     #print env.__doc__
     #print "Here is an example of state, action, reward, and next state"
     #example(env)
-    V_vi, p_pi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+    V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
     V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
     render_single(env, p_pi)
