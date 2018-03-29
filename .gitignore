@@ -1,3 +1,4 @@
 # Avoid books or videos
 ./Read/*
+/Read/*
 *.mp4
