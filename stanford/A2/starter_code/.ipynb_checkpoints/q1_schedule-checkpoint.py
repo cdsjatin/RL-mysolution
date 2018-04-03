@@ -35,9 +35,7 @@ class LinearSchedule(object):
         ##############################################################
         ################ YOUR CODE HERE - 3-4 lines ################## 
 
-        ratio = t / self.nsteps
-        self.epsilon = ratio * self.eps_end + (1 - ratio)* self.eps_begin
-            
+        pass
 
         ##############################################################
         ######################## END YOUR CODE ############## ########
@@ -79,12 +77,8 @@ class LinearExploration(LinearSchedule):
         ##############################################################
         ################ YOUR CODE HERE - 4-5 lines ##################
 
-        if np.random.rand() < self.epsilon:
-            best_action = self.env.action_space.sample()
-        else:
-            best_action = self.env.action_space.next()
+        pass
 
-        return best_action
         ##############################################################
         ######################## END YOUR CODE #######################
 
