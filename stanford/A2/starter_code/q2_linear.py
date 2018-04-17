@@ -54,8 +54,24 @@ class Linear(DQN):
         """
         ##############################################################
         ################YOUR CODE HERE (6-15 lines) ##################
-
-        pass
+        
+        H, W , C = state_shape
+    
+        self.s = tf.placeholder(tf.uint8, shape=(None, H, W,
+                                                 4 * self.config.state_history))
+        
+        self.a = tf.placeholder(tf.int32, shape=(None))
+        
+        self.r = tf.placeholder(tf.float32, shape=(None))
+        
+        self.sp = tf.placeholder(tf.uint8, shape=(None, H, W,
+                                                  4 * self.config.state_history))
+        
+        self.done_mask = tf.placeholder(tf.bool, shape=(None))
+        
+        self.lr = tf.placeholder(tf.float32)
+        
+        
 
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -98,8 +114,15 @@ class Linear(DQN):
         ##############################################################
         ################ YOUR CODE HERE - 2-3 lines ################## 
         
-        pass
-
+        
+        S = layers.flatten(state, scope=scope)
+        n = S.shape[0]
+        W = tf.Variable(tf.random_normal((n,num_actions)))
+        b = tf.Variable(tf.random_normal((num_actions)))
+        out = tf.matmul(S, W)
+        
+        
+        
         ##############################################################
         ######################## END YOUR CODE #######################
 

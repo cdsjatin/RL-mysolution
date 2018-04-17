@@ -1,6 +1,6 @@
 import numpy as np
 from utils.test_env import EnvTest
-
+import pdb
 
 class LinearSchedule(object):
     def __init__(self, eps_begin, eps_end, nsteps):
@@ -35,10 +35,16 @@ class LinearSchedule(object):
         ##############################################################
         ################ YOUR CODE HERE - 3-4 lines ################## 
 
-        ratio = t / self.nsteps
-        self.epsilon = ratio * self.eps_end + (1 - ratio)* self.eps_begin
+        #print(self.eps_begin, self.eps_end, self.nsteps)
+        #print(t, self.nsteps)
+        ratio = float(t) / self.nsteps
+        
+        #pdb.set_trace()
+        if ratio < 1:
+            self.epsilon = ratio * self.eps_end + (1 - ratio) * self.eps_begin
+        else:
+            self.epsilon = self.eps_end
             
-
         ##############################################################
         ######################## END YOUR CODE ############## ########
 
@@ -83,6 +89,7 @@ class LinearExploration(LinearSchedule):
             best_action = self.env.action_space.sample()
         else:
             best_action = self.env.action_space.next()
+            #print(best_action)
 
         return best_action
         ##############################################################
@@ -108,6 +115,7 @@ def test2():
     env = EnvTest((5, 5, 1))
     exp_strat = LinearExploration(env, 1, 0, 10)
     exp_strat.update(5)
+    print(exp_strat.epsilon)
     assert exp_strat.epsilon == 0.5, "Test 2 failed"
     print("Test2: ok")
 
