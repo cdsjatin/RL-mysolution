@@ -7,7 +7,7 @@ from core.deep_q_learning import DQN
 from q1_schedule import LinearExploration, LinearSchedule
 
 from configs.q2_linear import config
-
+import pdb
 
 class Linear(DQN):
     """
@@ -116,10 +116,13 @@ class Linear(DQN):
         
         
         S = layers.flatten(state, scope=scope)
-        n = S.shape[0]
-        W = tf.Variable(tf.random_normal((n,num_actions)))
-        b = tf.Variable(tf.random_normal((num_actions)))
-        out = tf.matmul(S, W)
+        #n = S.shape[1]
+        
+        #pdb.set_trace()
+        #W = tf.Variable(tf.random_normal((S.shape,num_actions)))
+        #out = tf.matmul(S, W)
+        out = tf.layers.dense(inputs=S, units=num_actions, activation=None,
+                              reuse=reuse)
         
         
         
@@ -168,7 +171,16 @@ class Linear(DQN):
         ##############################################################
         ################### YOUR CODE HERE - 5-10 lines #############
         
-        pass
+        pdb.set_trace()
+        #print(tf.GraphKeys.TRAINABLE_VARIABLES)
+        target_ws =tf.get_collection(tf.GraphKeys.WEIGHTS,
+                                     scope=target_q_scope)
+        with tf.variable_scope(q_scope):
+            tf.assign(tf.GraphKeys.WEIGHTS, target_ws)
+            
+        tf.group(name=self.update_target_op)
+        #tf.assign("W)
+        #tf.group()
 
         ##############################################################
         ######################## END YOUR CODE #######################
