@@ -67,9 +67,9 @@ class Linear(DQN):
         self.sp = tf.placeholder(tf.uint8, shape=(None, H, W,
                                                   4 * self.config.state_history))
         
-        self.done_mask = tf.placeholder(tf.bool, shape=(None))
+        self.done_mask = tf.placeholder(tf.bool, shape=[None])
         
-        self.lr = tf.placeholder(tf.float32)
+        self.lr = tf.placeholder(tf.float32,shape = ())
         
         
 
@@ -114,16 +114,17 @@ class Linear(DQN):
         ##############################################################
         ################ YOUR CODE HERE - 2-3 lines ################## 
         
-        
+        #pdb.set_trace()
         S = layers.flatten(state, scope=scope)
         #n = S.shape[1]
         
         #pdb.set_trace()
-        #W = tf.Variable(tf.random_normal((S.shape,num_actions)))
+        #W = tf.Variable(tf.random_normal(S.shape,num_actions))
         #out = tf.matmul(S, W)
+        init = tf.contrib.layers.xavier_initializer()
         out = tf.layers.dense(inputs=S, units=num_actions, activation=None,
-                              reuse=reuse)
-        
+                              reuse=reuse, trainable=True, 
+                              kernel_initializer=init)
         
         
         ##############################################################
@@ -171,14 +172,20 @@ class Linear(DQN):
         ##############################################################
         ################### YOUR CODE HERE - 5-10 lines #############
         
-        pdb.set_trace()
+        #pdb.set_trace()
         #print(tf.GraphKeys.TRAINABLE_VARIABLES)
-        target_ws =tf.get_collection(tf.GraphKeys.WEIGHTS,
+        target_coll =tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                      scope=target_q_scope)
-        with tf.variable_scope(q_scope):
-            tf.assign(tf.GraphKeys.WEIGHTS, target_ws)
+        q_coll = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                   scope=q_scope)
+        
+        op = [tf.assign(target_coll[i], q_coll[i]) for i in range(len(q_coll))]
+        
+        #with tf.variable_scope(q_scope):
+        #    tf.assign(tf.get_collection_ref(tf.GraphKeys.GLOBAL_VARIABLES),
+        #              target_ws)
             
-        tf.group(name=self.update_target_op)
+        self.update_target_op = tf.group(*op)
         #tf.assign("W)
         #tf.group()
 
@@ -222,8 +229,26 @@ class Linear(DQN):
         ##############################################################
         ##################### YOUR CODE HERE - 4-5 lines #############
 
-        pass
+        #pdb.set_trace()
+        predictions = tf.cast(q, tf.uint8)
+        target_q_cast = tf.cast(target_q, tf.uint8)
+        
+        #print(tf.reduce_max(target_q_cast, axis=1, keepdims=True).shape)
 
+
+        reduced_max = tf.reduce_max(target_q_cast, axis=1)
+          
+        l = tf.multiply(self.config.gamma,
+                             tf.one_hot(reduced_max,num_actions))
+      
+        # Assumed rewards as of size (?,) where each is experience.
+        
+        labels = tf.add(self.r, tf.boolean_mask(l, self.done_mask))
+        
+        # print(labels.shape)
+        
+        self.loss = tf.losses.mean_squared_error(labels, predictions)
+        
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -258,8 +283,26 @@ class Linear(DQN):
         """
         ##############################################################
         #################### YOUR CODE HERE - 8-12 lines #############
-
-        pass
+        
+        
+        
+        optimizer = tf.train.AdamOptimizer(self.lr)
+        
+        print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope))
+        
+        pdb.set_trace()
+        
+        var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
+                                     scope=scope)
+        
+        grads = optimizer.compute_gradients(self.loss,var_list)
+        
+        if self.config.grad_clip:
+            grads = tf.clip_by_norm(grads, self.config.clip_val)
+            
+        self.train_op = optimizer.apply_gradients(grads)
+            
+        self.grad_norm = tf.global_norm(grads)
         
         ##############################################################
         ######################## END YOUR CODE #######################

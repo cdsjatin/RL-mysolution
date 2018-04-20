@@ -87,9 +87,7 @@ class LinearExploration(LinearSchedule):
 
         if np.random.rand() < self.epsilon:
             best_action = self.env.action_space.sample()
-        else:
-            best_action = self.env.action_space.next()
-            #print(best_action)
+            
 
         return best_action
         ##############################################################
