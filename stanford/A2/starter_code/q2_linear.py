@@ -58,18 +58,21 @@ class Linear(DQN):
         H, W , C = state_shape
     
         self.s = tf.placeholder(tf.uint8, shape=(None, H, W,
-                                                 4 * self.config.state_history))
+                                C * self.config.state_history), name='state')
         
-        self.a = tf.placeholder(tf.int32, shape=(None))
+        self.a = tf.placeholder(tf.int32, shape=(None), name='actions')
         
-        self.r = tf.placeholder(tf.float32, shape=(None))
+        self.r = tf.placeholder(tf.float32, shape=(None), name='rewards')
         
         self.sp = tf.placeholder(tf.uint8, shape=(None, H, W,
-                                                  4 * self.config.state_history))
+                                                  C * self.config.state_history)
+                                                , name='next_state')
         
-        self.done_mask = tf.placeholder(tf.bool, shape=[None])
+        self.done_mask = tf.placeholder(tf.bool, shape=[None],
+                                        name='done_mask')
         
-        self.lr = tf.placeholder(tf.float32,shape = ())
+        self.lr = tf.placeholder(tf.float32,shape = (),
+                                 name='learning_rate')
         
         
 
@@ -121,11 +124,15 @@ class Linear(DQN):
         #pdb.set_trace()
         #W = tf.Variable(tf.random_normal(S.shape,num_actions))
         #out = tf.matmul(S, W)
-        init = tf.contrib.layers.xavier_initializer()
-        out = tf.layers.dense(inputs=S, units=num_actions, activation=None,
-                              reuse=reuse, trainable=True, 
-                              kernel_initializer=init)
         
+#        init = tf.contrib.layers.xavier_initializer()
+#        out = tf.layers.dense(inputs=S, units=num_actions, activation=None,
+#                              reuse=reuse, trainable=True, 
+#                              kernel_initializer=init)
+#        
+        
+        out = layers.fully_connected(S, num_actions, reuse=reuse,
+                                     scope=scope, activation_fn=None)
         
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -229,25 +236,35 @@ class Linear(DQN):
         ##############################################################
         ##################### YOUR CODE HERE - 4-5 lines #############
 
-        #pdb.set_trace()
-        predictions = tf.cast(q, tf.uint8)
-        target_q_cast = tf.cast(target_q, tf.uint8)
+         #pdb.set_trace()
+#        predictions = tf.cast(q, tf.uint8)
+#        target_q_cast = tf.cast(target_q, tf.uint8)
+#        
+#        #print(tf.reduce_max(target_q_cast, axis=1, keepdims=True).shape)
+#
+#
+#        reduced_max = tf.reduce_max(target_q_cast, axis=1)
+#          
+#        l = tf.multiply(self.config.gamma,
+#                             tf.one_hot(reduced_max,num_actions))
+#      
+#        # Assumed rewards as of size (?,) where each is experience.
+#        
+#        labels = tf.add(self.r, tf.boolean_mask(l, self.done_mask))
+#        
+#        # print(labels.shape)
+#        
+#        self.loss = tf.losses.mean_squared_error(labels, predictions)
+#        #pdb.set_trace()
+#        #print(q.shape)
         
-        #print(tf.reduce_max(target_q_cast, axis=1, keepdims=True).shape)
-
-
-        reduced_max = tf.reduce_max(target_q_cast, axis=1)
-          
-        l = tf.multiply(self.config.gamma,
-                             tf.one_hot(reduced_max,num_actions))
-      
-        # Assumed rewards as of size (?,) where each is experience.
+        temp = self.r + self.config.gamma * tf.reduce_max(target_q, axis=1)
+        q_samp = tf.where(self.done_mask, self.r, temp)
         
-        labels = tf.add(self.r, tf.boolean_mask(l, self.done_mask))
+        action = tf.one_hot(self.a, num_actions)
+        q_new = tf.reduce_sum(tf.multiply(action, q), axis=1)
         
-        # print(labels.shape)
-        
-        self.loss = tf.losses.mean_squared_error(labels, predictions)
+        self.loss = tf.reduce_mean(tf.square(q_new - q_samp))
         
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -288,9 +305,9 @@ class Linear(DQN):
         
         optimizer = tf.train.AdamOptimizer(self.lr)
         
-        print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=scope))
+        #print(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope))
         
-        pdb.set_trace()
+        #pdb.set_trace()
         
         var_list = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                      scope=scope)
@@ -298,11 +315,12 @@ class Linear(DQN):
         grads = optimizer.compute_gradients(self.loss,var_list)
         
         if self.config.grad_clip:
-            grads = tf.clip_by_norm(grads, self.config.clip_val)
+#           grads = tf.clip_by_norm(grads, self.config.clip_val)
+           grads = [(tf.clip_by_norm(item[0],self.config.clip_val),item[1]) for item in grads]
             
         self.train_op = optimizer.apply_gradients(grads)
             
-        self.grad_norm = tf.global_norm(grads)
+        self.grad_norm = tf.global_norm([item[0] for item in grads])
         
         ##############################################################
         ######################## END YOUR CODE #######################

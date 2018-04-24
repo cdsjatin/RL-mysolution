@@ -8,7 +8,7 @@ from q2_linear import Linear
 
 
 from configs.q3_nature import config
-
+import pdb
 
 class NatureQN(Linear):
     """
@@ -54,8 +54,18 @@ class NatureQN(Linear):
         """
         ##############################################################
         ################ YOUR CODE HERE - 10-15 lines ################ 
-
-        pass
+        
+        #pdb.set_trace()
+        
+        with tf.variable_scope(scope, reuse=reuse) as _:
+            out = layers.conv2d(out, num_outputs=16, kernel_size=8, stride=4)
+            out = layers.conv2d(out, num_outputs=32, kernel_size=4, stride=2)
+            out = layers.flatten(out)
+            out = layers.fully_connected(out, num_outputs=256)
+            out = layers.fully_connected(out, num_outputs=num_actions, 
+                                         activation_fn=None)
+        
+        
 
         ##############################################################
         ######################## END YOUR CODE #######################
